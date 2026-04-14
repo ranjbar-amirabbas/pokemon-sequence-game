@@ -26,8 +26,9 @@ func main() {
 		}
 		if len(data) == 0 {
 			fmt.Println("no matching words")
+		} else {
+			fmt.Println(string(data))
 		}
 
-		fmt.Println(string(data))
 	}
 }

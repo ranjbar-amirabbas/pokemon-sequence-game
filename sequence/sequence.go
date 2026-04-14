@@ -37,7 +37,9 @@ func Sequence(a rune, file io.ReadCloser) io.Reader {
 
 func findWord(letter rune, file *os.File, used map[string]bool) string {
 
-	file.Seek(0, io.SeekStart)
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return ""
+	}
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanWords)
