@@ -3,58 +3,62 @@ package sequence
 import (
 	"bufio"
 	"io"
-	"os"
 	"strings"
 	"unicode"
 )
 
+/*
+Sequence does not call Close() on the provided reader.
+The caller is responsible for opening and closing the stream,
+as Sequence should not assume ownership of the resource it receives.
+*/
 func Sequence(a rune, file io.ReadCloser) io.Reader {
-	//guarantees the file closes when the function exits
-	defer file.Close()
 
-	f, ok := file.(*os.File)
-	if !ok {
-		return strings.NewReader("Error on reading the file")
-	}
-
+	/*
+		Normalize to lowercase for case-insensitive matching
+		The source data is already lowercase, so ToLower avoids
+		unnecessary transformations compared to ToUpper
+	*/
 	currentLetter := unicode.ToLower(a)
-	var result []string
-	used := map[string]bool{}
-
-	for {
-
-		word := findWord(currentLetter, f, used)
-		if word == "" {
-			break
-		}
-		result = append(result, word)
-		currentLetter = rune(word[len(word)-1])
-
-	}
-
-	return strings.NewReader(strings.Join(result, ", "))
-}
-
-func findWord(letter rune, file *os.File, used map[string]bool) string {
-
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return ""
-	}
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanWords)
+	result := []string{}
+
+	/*
+	   We build an index grouped by first letter so that each lookup is O(1),
+	   avoiding repeated scans of the stream. The stream is read once using a
+	   buffered scanner to minimize raw bytes in memory. This trades memory for
+	   the ability to support non-seekable streams such as network or cloud sources.
+	*/
+	index := map[rune][]string{}
 
 	for scanner.Scan() {
+		// Normalize to lowercase for case-insensitive matching
+		// Trim because words in the source are separated by commas(,)
 		word := strings.ToLower(strings.Trim(scanner.Text(), " ,."))
-		if used[word] {
-			continue
-		}
-
-		if rune(word[0]) == letter {
-			used[word] = true
-			return word
-		}
+		firstLetter := rune(word[0])
+		index[firstLetter] = append(index[firstLetter], word)
 	}
-	return ""
 
+	// Each word's last letter becomes the key for the next lookup.
+	// Words are removed from the index as they are used to prevent repetition.
+	for {
+		targetList := index[currentLetter]
+		if len(targetList) == 0 {
+			break
+		}
+		target := targetList[0]
+
+		result = append(result, target)
+
+		// Prevent repetition.
+		index[currentLetter] = targetList[1:]
+
+		// Advance to the last letter of the current word to find the next match.
+		targetRunes := []rune(target)
+		currentLetter = targetRunes[len(targetRunes)-1]
+	}
+
+	return strings.NewReader(strings.Join(result, ", "))
 }
