@@ -11,7 +11,7 @@ func main() {
 	for true {
 		file, err := os.Open("sequence/pokemon.txt")
 		if err != nil {
-			fmt.Println("Error in opeining file: ", err)
+			fmt.Println("Error in opening file: ", err)
 			return
 		}
 		var input string
