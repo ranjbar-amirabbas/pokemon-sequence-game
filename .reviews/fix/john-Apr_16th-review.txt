@@ -1,0 +1,5 @@
+Task 1 (remove defer Close)
+Task 2 & 3 (remove type assertions, fix signatures)
+Task 4 (redesign the core algorithm) — everything else flows from this
+Task 5 (add comments)
+Task 6 (fix main.go)

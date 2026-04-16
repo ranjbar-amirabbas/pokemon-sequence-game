@@ -18,7 +18,7 @@ func main() {
 		fmt.Scan(&input)
 
 		result := sequence.Sequence(rune(input[0]), file)
-
+		file.Close()
 		data, err := io.ReadAll(result)
 		if err != nil {
 			fmt.Println("Error on showing result", err)

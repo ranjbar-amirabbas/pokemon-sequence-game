@@ -9,8 +9,6 @@ import (
 )
 
 func Sequence(a rune, file io.ReadCloser) io.Reader {
-	//guarantees the file closes when the function exits
-	defer file.Close()
 
 	f, ok := file.(*os.File)
 	if !ok {
