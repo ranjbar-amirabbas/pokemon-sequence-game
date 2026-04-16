@@ -26,9 +26,10 @@ func Sequence(a rune, file io.ReadCloser) io.Reader {
 	result := []string{}
 
 	/*
-		We build an index grouped by first letter so that each lookup is O(1)
-		avoiding repeated scans of the stream.
-		The stream is read once; don't need it again
+	   We build an index grouped by first letter so that each lookup is O(1),
+	   avoiding repeated scans of the stream. The stream is read once using a
+	   buffered scanner to minimize raw bytes in memory. This trades memory for
+	   the ability to support non-seekable streams such as network or cloud sources.
 	*/
 	index := map[rune][]string{}
 
