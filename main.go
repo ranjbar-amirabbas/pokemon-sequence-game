@@ -15,8 +15,10 @@ func main() {
 			return
 		}
 		var input string
-		fmt.Scan(&input)
-
+		_, err = fmt.Scan(&input)
+		if err != nil || len(input) == 0 {
+			break
+		}
 		result := sequence.Sequence(rune(input[0]), file)
 		file.Close()
 		data, err := io.ReadAll(result)
